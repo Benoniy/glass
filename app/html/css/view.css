@@ -1,0 +1,325 @@
+:root {
+  --default-bg-color: #1d1d1d;
+  --default-text-color: #a5a5a5;
+
+  --sbar-bg-color:  #262626;
+  --sbar-bg-color-alt: #343434;
+  --sbar-border-color: #4e4e4e;
+  --sbar-text-color-h: #ffffff;
+  --sbar-link-h-color: rgb(69, 69, 69);
+
+  --main-title-color: #d2d2d2;
+  --main-text-color: #bebebe;
+  --main-code-bg-color: #262626;
+  --main-code-border-color: #8e8e8e;
+  --main-link-color: rgb(158, 99, 253);
+  --main-link-color-h: rgb(205, 173, 255);
+  --main-table-border-color: #f1f1f1;
+  --main-hr-color: #c6c6c6;
+}
+
+body {
+  margin: 0;
+  background-color: var(--default-bg-color); /* Black */
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+
+/*------------------*/
+/* The sidebar menu */
+/*------------------*/
+.sidebar {
+  top:0;
+  position: fixed;
+
+  height: 100%;
+  width: 235px;
+  
+  margin-bottom: 20px;
+
+  background-color: var(--sbar-bg-color);
+}
+
+.sidetitle {
+  width: calc(100% - 10px);
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  background-color: var(--sbar-bg-color);
+  border-right: var(--sbar-border-color) solid 3px;
+}
+
+.sidebar hr {
+  margin-left: 10px;
+}
+
+.sidebar h2 {
+  color: var(--main-text-color);
+  margin: 0px;
+}
+
+.sidenav {
+  position: absolute; /* Fixed Sidebar (stay in place on scroll) */
+  left: 0;
+
+  height: calc(100% - 38px);
+  width: calc(100% + 5px); /* Set the width of the sidebar */
+
+  background-color: var(--sbar-bg-color); /* Black */
+
+  overflow-x: hidden;
+  overflow-y:scroll;
+  scrollbar-color: var(--sbar-border-color) transparent;
+  scrollbar-width: thin;
+
+  padding-right: 5px;
+  margin-bottom: 20px;
+  border-right: var(--sbar-border-color) solid 3px;
+
+  box-shadow: 0 0 5px 1px #141414 inset;
+
+}
+
+.sidenav ul {
+  padding-inline-start: 10px;
+  padding-inline-end: 0px;
+  list-style-type:none;
+}
+
+.li-file {
+  margin-left: 7px;
+  margin-right: 7px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 15px;
+}
+
+.folder-line {
+  position: absolute;
+  top: 3px;
+  left: 0;
+
+  height: calc(100% - 15px);
+  width: 9px;
+  
+  border-right: var(--sbar-border-color) 1px;
+  border-right-style: inset;
+}
+
+.sidenav details {
+  padding-left: 5px;
+
+  cursor: pointer;
+}
+
+.sidenav details[open] {
+  margin-bottom: 7px;
+}
+
+/* The navigation menu links */
+.sidenav summary {
+  text-decoration: none;
+  font-size: 15px;
+  color: var(--default-text-color);
+
+  margin-top: 3px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-bottom: 3px;
+
+  display: block;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav details summary:hover {
+  color: var(--sbar-text-color-h);
+  background-color: var(--sbar-bg-color-alt);
+  border-radius: 15px;
+  padding-left: 10px;
+}
+
+
+/* The navigation menu links */
+.sidenav a {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 1px;
+  padding-right: 7px;
+
+  text-decoration: none;
+  font-size: 15px;
+  color: var(--default-text-color);
+
+  display: block;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover:not(.highlighted) {
+  color: var(--sbar-text-color-h);
+  background-color: var(--sbar-bg-color-alt);
+  padding-left: 7px !important;
+  border-radius: 15px;
+}
+
+/* When you use a link, highlight it */
+.highlighted { 
+  background-color: var(--sbar-link-h-color);
+
+  color: var(--sbar-text-color-h) !important;
+
+  padding-left: 10px !important;
+
+  border-bottom: 0px !important;
+  border-radius: 15px;
+}
+
+/*------------------*/
+/* The main content */
+/*------------------*/
+.main {
+  position: absolute;
+  top: 0;
+
+  width: calc(100% - 307px);
+
+  margin-left: 247px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+  padding-left: 30px;
+  padding-right: 30px;
+
+  background-color: var(--default-bg-color); /* Black */
+
+  color: var(--main-title-color);
+}
+
+.main ul {
+  margin-top: 0px;
+}
+.main h1 {
+  margin-bottom: 20px;
+
+  font-size: 2em;
+}
+.main h2 {
+  margin-top: 20px;
+  margin-bottom: 5px;
+
+  font-size: 1.75em;
+}
+.main h3 {
+  margin-top: 15px;
+  margin-bottom: 4px;
+
+  font-size: 1.5em;
+}
+.main h4 {
+  margin-top: 10px;
+  margin-bottom: 4px;
+
+  font-size: 1.25em;
+}
+.main h5 {
+  margin-top: 0px;
+  margin-bottom: 4px;
+
+  font-size: 1em;
+}
+.main h6 {
+  margin-top: 0px;
+  margin-bottom: 4px;
+}
+.main p {
+  margin-top: 0px;
+  margin-block-end: 0px;
+  padding-left: 2px;
+  padding-bottom: 20px;
+
+  font-size: 12pt;
+  color: var(--main-text-color);
+}
+.main p:has(strong) {
+  padding-bottom: 0px;
+  color: var(--main-title-color);
+}
+
+.main p:has(+ ul) {
+  padding-bottom: 0px;
+
+  color: var(--main-title-color);
+  font-weight: bold;
+}
+
+
+.main li {
+  color: var(--main-text-color);
+}
+
+/* Table Elements */
+.main table {
+  border-collapse:collapse;
+  border: var(--main-table-border-color) 1px solid;
+  margin-bottom: 20px;
+}
+
+.main td {
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  border: var(--main-table-border-color) 1px solid;
+}
+
+.main tr {
+  border: var(--main-table-border-color) 1px solid;
+}
+
+.main th {
+  border: var(--main-table-border-color) 1px solid;
+}
+
+/* Code Blocks */
+.main pre:has(code) {
+  background: var(--main-code-bg-color);
+
+  padding: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  border-radius: 10px;
+}
+.main p:has(code) {
+  background: var(--main-code-bg-color);
+  
+  padding: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+
+  border-radius: 10px;
+}
+
+.main code {
+  font-family: monospace;
+  font-weight: bold;
+  text-wrap-mode: wrap;
+  font-size: 11pt;
+}
+
+/* Links */
+.main a {
+  color: var(--main-link-color);
+}
+
+.main a:hover {
+  color: var(--main-link-color-h);
+}
+
+.main hr {
+  border-color: var(--main-hr-color);
+  margin-top: 40px;
+}
+

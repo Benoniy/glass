@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="/css/view.css" type="text/css">
+</head>
+<html> 
+    <div class="sidebar">
+        <div class="sidetitle">
+            <h2>File Explorer:</h2>
+        </div>
+        <div class="sidenav">
+            {{ template "node" .SideBar }}
+        </div>
+        
+    </div>
+    <div class="main">{{ .FileContent }}</div>
+</html>
+
+
+{{ define "node" }}
+    <ul class="tree">
+        {{ range .Children }}
+            {{ if .IsDir }}
+            <li class="li-folder">
+                <details id="/{{ .FullPath }}-D">
+                    <summary>&#128193 {{ .Name }}</summary>
+                    <div style="position: relative; display: block;">
+                        <div class="folder-line"></div>
+                        {{ template "node" . }}
+                    </div>
+                </details>
+            </li>
+            {{ else }}
+            <li class="li-file">
+                <span class="file"><a href="/{{ .FullPath }}" id="/{{ .FullPath }}-A" class="trackable">{{ .Name }}</a></span>
+            </li>
+            {{ end }}
+        {{ end }}
+    </ul>
+{{ end }}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const detailsElements = document.querySelectorAll("details");
+        const links = document.querySelectorAll(".trackable");
+    
+        // Restore <details> state
+        detailsElements.forEach(details => {
+            const detailsId = details.id;
+            if (localStorage.getItem(`details-${detailsId}`) === "open") {
+                details.open = true;
+            }
+    
+            details.addEventListener("toggle", function () {
+                if (details.open) {
+                    localStorage.setItem(`details-${detailsId}`, "open");
+                } else {
+                    localStorage.removeItem(`details-${detailsId}`);
+                }
+            });
+        });
+    
+        // Restore last clicked <a> and expand its <details> if necessary
+        const lastClickedId = localStorage.getItem("lastClickedLink");
+        
+        if (lastClickedId) {
+            const lastClickedElement = document.getElementById(lastClickedId);
+            if (lastClickedElement) {
+                lastClickedElement.classList.add("highlighted");
+                openParentDetails(lastClickedElement)
+            }
+        }
+
+        // Handle link clicks
+        links.forEach(link => {
+            link.addEventListener("click", function () {
+                ActionSideBarLink(link.id)
+            });
+        });
+
+        function openParentDetails(element) {
+            const parentDetails = element.closest("details");
+            if (parentDetails) {
+                parentDetails.open = true;
+                openParentDetails(parentDetails.parentElement); // Recursively open further up
+            }
+        }
+
+        function ActionSideBarLink(linkId) {
+            const sideBarLink = document.getElementById(linkId);
+            links.forEach(l => l.classList.remove("highlighted"));
+            sideBarLink.classList.add("highlighted");
+            localStorage.setItem("lastClickedLink", sideBarLink.id);
+            openParentDetails(sideBarLink);
+        }
+
+        // Handle main screen links, attempt to translate broken relative links to absolute links
+        document.querySelectorAll(".main a").forEach(link => {
+            link.addEventListener("click", event => {
+                try {
+                    const linkIDSanitized = link.getAttribute("href").replaceAll("%20", " ").replaceAll("\.\./", "") + "-A"
+                    ActionSideBarLink(linkIDSanitized)
+                } catch (error) {
+                    try { 
+                        const linkIDSanitized = "/" + link.getAttribute("href").replaceAll("%20", " ").replaceAll("\.\./", "") + "-A"
+                        ActionSideBarLink(linkIDSanitized)
+                    } catch (error){
+                        console.error(error.message)
+                    }
+                }
+                
+                event.preventDefault();
+                const tryLoad = href => fetch(href, { method: "HEAD" })
+                    .then(res => res.ok ? location.href = href : Promise.reject());
+                
+                tryLoad(link.href).catch(() => tryLoad("/" + link.getAttribute("href").replace(/^\/+/, "")));
+            });
+        });
+    });
+</script>
