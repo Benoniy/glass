@@ -185,4 +185,3 @@ func main() {
     http.Handle("/favicon.ico",  http.StripPrefix("/", http.FileServer(http.Dir("html/img")))) // Serve favicon
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-
