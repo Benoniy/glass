@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"html/template"
 	"io"
 	"io/fs"
@@ -8,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -17,20 +20,47 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-var filetypes = []string{".md"}
-
-
-type TestPage struct {
+type ViewPage struct {
 	FileContent template.HTML
-	SideBar FileNode
+	SideBar     FileNode
 }
 
-// FileNode represents a file or folder in the tree structure
+type SettingsFile struct {
+	File        string
+	Permissions map[string][]string
+}
+
+// FileNode represents a file or folder in the tree structure of the side bar
 type FileNode struct {
 	Name     string
 	FullPath string
 	IsDir    bool
 	Children []*FileNode
+}
+
+var filetypes = []string{".md"}
+var settings_folder = "settings/"
+
+var settings SettingsFile
+
+func performSetup() {
+	// Setup settings folder structure
+
+	if _, err := os.Stat(settings_folder + settings.File); !errors.Is(err, os.ErrNotExist) {
+		body, err := os.ReadFile(settings_folder + "settings.json")
+		if err != nil {
+		}
+		err = json.Unmarshal(body, &settings)
+		if err != nil {
+		}
+	} else {
+		print("does not exist")
+		os.Exit(1)
+	}
+
+	// s, _ := json.Marshal(settings)
+	// print(string(s))
+
 }
 
 // buildTree creates a hierarchical file tree structure from a list of paths
@@ -105,26 +135,26 @@ func fileExtInString(ext string) bool {
 
 func loadMd(title string) []byte {
 	filename := title
-	file_ext := title[len(title) - 3:]
+	file_ext := title[len(title)-3:]
 
 	if !fileExtInString(file_ext) {
 		filename += file_ext
 	}
-	
+
 	prefix := ""
 	if len(title) > len("content/") && title[:len("content/")] != "content/" {
 		prefix = "content/"
 	}
-    
+
 	body, err := os.ReadFile(prefix + filename)
-    results := strings.Split(filename, "/")
+	results := strings.Split(filename, "/")
 	result := results[len(results)-1]
 
 	newBody := "# " + result[:len(result)-3] + "  \n" + string(body)
-    if err != nil {
-        return nil
-    }
-    return []byte(newBody)
+	if err != nil {
+		return nil
+	}
+	return []byte(newBody)
 }
 
 // // an actual rendering of Paragraph is more complicated
@@ -145,33 +175,60 @@ func myRenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bo
 	return ast.GoToNext, false
 }
 
+func fileAccessDenied(path string) bool {
+
+	for _, deny_entry := range settings.Permissions["DenyList"] {
+		// Don't count empty entries
+		if strings.TrimSpace(deny_entry) == "" {
+			continue
+		}
+		match, err := regexp.Match(deny_entry, []byte(path))
+
+		if err != nil {
+			return false
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	var filepaths []string
 
 	filepath.WalkDir("content", func(name string, info fs.DirEntry, err error) error {
-		file_ext := name[len(name) - 3:]
+		file_ext := name[len(name)-3:]
 		if fileExtInString(file_ext) {
-			filepaths = append(filepaths, name[len("content/"):])
+			relative_path := name[len("content/"):]
+
+			if !fileAccessDenied(relative_path) {
+				filepaths = append(filepaths, relative_path)
+			}
 		}
-		
+
 		return nil
 	})
 
-	
 	// Build the file tree
 	tree := buildTree(filepaths)
-	mds := loadMd(r.URL.Path[1:])
 
+	if fileAccessDenied(r.URL.Path[len("content/"):]) {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("Forbidden!"))
+		return
+	}
+
+	mds := loadMd(r.URL.Path[1:])
 	page_content := mdToHTML(mds)
 
-	current_page :=  &TestPage{FileContent: template.HTML(page_content), SideBar: *tree}
+	current_page := &ViewPage{FileContent: template.HTML(page_content), SideBar: *tree}
 
 	// This enables the javascript code to work but im not 100% sure why it prints even on good requests
 	if string(page_content) == "" {
 		w.WriteHeader(http.StatusBadRequest)
-    	w.Write([]byte("400 - Bad Request!"))
+		w.Write([]byte("400 - Bad Request!"))
 		print("Bad request!")
 	} else {
 		t, _ := template.ParseFiles("html/view.html")
@@ -180,8 +237,10 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    http.HandleFunc("/", viewHandler)
-	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("html/css")))) //Allow access to css folder
-    http.Handle("/favicon.ico",  http.StripPrefix("/", http.FileServer(http.Dir("html/img")))) // Serve favicon
+	performSetup()
+
+	http.HandleFunc("/", viewHandler)
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("html/css"))))    //Allow access to css folder
+	http.Handle("/favicon.ico", http.StripPrefix("/", http.FileServer(http.Dir("html/img")))) // Serve favicon
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

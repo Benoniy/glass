@@ -44,39 +44,22 @@
         const detailsElements = document.querySelectorAll("details");
         const links = document.querySelectorAll(".trackable");
     
-        // Restore <details> state
+        // Restore <details> state from memory, opening the sidebar items
         detailsElements.forEach(details => {
-            const detailsId = details.id;
-            if (localStorage.getItem(`details-${detailsId}`) === "open") {
-                details.open = true;
-            }
-    
-            details.addEventListener("toggle", function () {
-                if (details.open) {
-                    localStorage.setItem(`details-${detailsId}`, "open");
-                } else {
-                    localStorage.removeItem(`details-${detailsId}`);
-                }
-            });
-        });
-    
-        // Restore last clicked <a> and expand its <details> if necessary
-        const lastClickedId = localStorage.getItem("lastClickedLink");
-        
-        if (lastClickedId) {
-            const lastClickedElement = document.getElementById(lastClickedId);
-            if (lastClickedElement) {
-                lastClickedElement.classList.add("highlighted");
-                openParentDetails(lastClickedElement)
-            }
-        }
+            const key = `details-${details.id}`;
+            details.open = localStorage.getItem(key) === "open";
 
-        // Handle link clicks
-        links.forEach(link => {
-            link.addEventListener("click", function () {
-                ActionSideBarLink(link.id)
-            });
+            details.addEventListener("toggle", () => 
+                details.open ? localStorage.setItem(key, "open") : localStorage.removeItem(key)
+            );
         });
+    
+        // Restore last clicked link in the sidebar and expand its parent <details> if necessary
+        const lastClickedElement = document.getElementById(localStorage.getItem("lastClickedLink"));
+        if (lastClickedElement) {
+            lastClickedElement.classList.add("highlighted");
+            openParentDetails(lastClickedElement);
+        }
 
         function openParentDetails(element) {
             const parentDetails = element.closest("details");
@@ -94,25 +77,28 @@
             openParentDetails(sideBarLink);
         }
 
+        // Handle link clicks in the sidebar
+        links.forEach(link => {
+            link.addEventListener("click", function () {
+                ActionSideBarLink(link.id)
+            });
+        });
+
         // Handle main screen links, attempt to translate broken relative links to absolute links
         document.querySelectorAll(".main a").forEach(link => {
             link.addEventListener("click", event => {
-                try {
-                    const linkIDSanitized = link.getAttribute("href").replaceAll("%20", " ").replaceAll("\.\./", "") + "-A"
-                    ActionSideBarLink(linkIDSanitized)
-                } catch (error) {
-                    try { 
-                        const linkIDSanitized = "/" + link.getAttribute("href").replaceAll("%20", " ").replaceAll("\.\./", "") + "-A"
-                        ActionSideBarLink(linkIDSanitized)
-                    } catch (error){
-                        console.error(error.message)
-                    }
-                }
-                
                 event.preventDefault();
+
+                try {
+                    let href = link.getAttribute("href").replaceAll("%20", " ").replaceAll("../", "");
+                    ActionSideBarLink(`/${href}-A`);
+                } catch (error) {
+                    console.error(error.message);
+                }
+
                 const tryLoad = href => fetch(href, { method: "HEAD" })
-                    .then(res => res.ok ? location.href = href : Promise.reject());
-                
+                    .then(res => res.ok ? (location.href = href) : Promise.reject());
+
                 tryLoad(link.href).catch(() => tryLoad("/" + link.getAttribute("href").replace(/^\/+/, "")));
             });
         });

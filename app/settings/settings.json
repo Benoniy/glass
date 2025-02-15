@@ -1,0 +1,6 @@
+{
+    "File":"settings.json",
+    "Permissions": {
+        "DenyList":[""]
+    }   
+}

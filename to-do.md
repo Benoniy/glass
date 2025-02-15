@@ -4,3 +4,4 @@
 * Support for obsidian tags
 * Support for embedded images
 * Support for images and pdf files
+* create an admin mode that allows setting permissions on files

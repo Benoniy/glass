@@ -29,12 +29,12 @@ body {
 /* The sidebar menu */
 /*------------------*/
 .sidebar {
-  top:0;
   position: fixed;
+  top:0;
 
   height: 100%;
   width: 235px;
-  
+
   margin-bottom: 20px;
 
   background-color: var(--sbar-bg-color);
@@ -43,10 +43,7 @@ body {
 .sidetitle {
   width: calc(100% - 10px);
 
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 10px;
 
   background-color: var(--sbar-bg-color);
   border-right: var(--sbar-border-color) solid 3px;
@@ -105,13 +102,11 @@ body {
   height: calc(100% - 15px);
   width: 9px;
   
-  border-right: var(--sbar-border-color) 1px;
-  border-right-style: inset;
+  border-right: 1px inset var(--sbar-border-color);
 }
 
 .sidenav details {
   padding-left: 5px;
-
   cursor: pointer;
 }
 
@@ -167,7 +162,6 @@ body {
 /* When you use a link, highlight it */
 .highlighted { 
   background-color: var(--sbar-link-h-color);
-
   color: var(--sbar-text-color-h) !important;
 
   padding-left: 10px !important;
@@ -184,54 +178,20 @@ body {
   top: 0;
 
   width: calc(100% - 307px);
-
   margin-left: 247px; /* Same as the width of the sidebar */
-  padding: 0px 10px;
-  padding-bottom: 50px;
-  padding-left: 30px;
-  padding-right: 30px;
-
-  background-color: var(--default-bg-color); /* Black */
+  padding: 0 30px 50px;
 
   color: var(--main-title-color);
 }
 
-.main ul {
-  margin-top: 0px;
-}
-.main h1 {
-  margin-bottom: 20px;
 
-  font-size: 2em;
-}
-.main h2 {
-  margin-top: 20px;
-  margin-bottom: 5px;
+.main h1 { margin-bottom: 20px; font-size: 2em; }
+.main h2 { margin-top: 20px; margin-bottom: 5px; font-size: 1.75em; }
+.main h3 {  margin-top: 15px; margin-bottom: 4px; font-size: 1.5em; }
+.main h4 { margin-top: 10px; margin-bottom: 4px; font-size: 1.25em; }
+.main h5 { margin-top: 0px; margin-bottom: 4px; font-size: 1em; }
+.main h6 { margin-top: 0px; margin-bottom: 4px; }
 
-  font-size: 1.75em;
-}
-.main h3 {
-  margin-top: 15px;
-  margin-bottom: 4px;
-
-  font-size: 1.5em;
-}
-.main h4 {
-  margin-top: 10px;
-  margin-bottom: 4px;
-
-  font-size: 1.25em;
-}
-.main h5 {
-  margin-top: 0px;
-  margin-bottom: 4px;
-
-  font-size: 1em;
-}
-.main h6 {
-  margin-top: 0px;
-  margin-bottom: 4px;
-}
 .main p {
   margin-top: 0px;
   margin-block-end: 0px;
@@ -241,11 +201,13 @@ body {
   font-size: 12pt;
   color: var(--main-text-color);
 }
+
 .main p:has(strong) {
   padding-bottom: 0px;
   color: var(--main-title-color);
 }
 
+/* If the p is right behind a list, assume its a title */
 .main p:has(+ ul) {
   padding-bottom: 0px;
 
@@ -254,9 +216,15 @@ body {
 }
 
 
+/* List elements */
+.main ul {
+  margin-top: 0px;
+}
+
 .main li {
   color: var(--main-text-color);
 }
+
 
 /* Table Elements */
 .main table {
@@ -274,25 +242,14 @@ body {
   border: var(--main-table-border-color) 1px solid;
 }
 
-.main tr {
+.main tr, .main th {
   border: var(--main-table-border-color) 1px solid;
 }
 
-.main th {
-  border: var(--main-table-border-color) 1px solid;
-}
+
 
 /* Code Blocks */
-.main pre:has(code) {
-  background: var(--main-code-bg-color);
-
-  padding: 20px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-
-  border-radius: 10px;
-}
-.main p:has(code) {
+.main pre:has(code), .main p:has(code) {
   background: var(--main-code-bg-color);
   
   padding: 20px;
@@ -309,6 +266,7 @@ body {
   text-wrap-mode: wrap;
   font-size: 11pt;
 }
+
 
 /* Links */
 .main a {
