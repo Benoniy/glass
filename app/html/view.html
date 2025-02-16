@@ -43,7 +43,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const detailsElements = document.querySelectorAll("details");
         const links = document.querySelectorAll(".trackable");
-    
+
         // Restore <details> state from memory, opening the sidebar items
         detailsElements.forEach(details => {
             const key = `details-${details.id}`;
@@ -53,7 +53,7 @@
                 details.open ? localStorage.setItem(key, "open") : localStorage.removeItem(key)
             );
         });
-    
+
         // Restore last clicked link in the sidebar and expand its parent <details> if necessary
         const lastClickedElement = document.getElementById(localStorage.getItem("lastClickedLink"));
         if (lastClickedElement) {

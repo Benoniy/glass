@@ -54,7 +54,6 @@ func performSetup() {
 		if err != nil {
 		}
 	} else {
-		print("does not exist")
 		os.Exit(1)
 	}
 
@@ -146,15 +145,21 @@ func loadMd(title string) []byte {
 		prefix = "content/"
 	}
 
-	body, err := os.ReadFile(prefix + filename)
-	results := strings.Split(filename, "/")
-	result := results[len(results)-1]
-
-	newBody := "# " + result[:len(result)-3] + "  \n" + string(body)
-	if err != nil {
-		return nil
+	if _, err := os.Stat(prefix + filename); !errors.Is(err, os.ErrNotExist) {
+		body, err := os.ReadFile(prefix + filename)
+		results := strings.Split(filename, "/")
+		result := results[len(results)-1]
+	
+		newBody := "# " + result[:len(result)-3] + "  \n" + string(body)
+		if err != nil {
+			return nil
+		}
+		return []byte(newBody)
+	} else {
+		return []byte("# " + filename[:len(filename) - len(file_ext)])
 	}
-	return []byte(newBody)
+		
+
 }
 
 // // an actual rendering of Paragraph is more complicated
@@ -201,7 +206,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	filepath.WalkDir("content", func(name string, info fs.DirEntry, err error) error {
 		file_ext := name[len(name)-3:]
 		if fileExtInString(file_ext) {
-			relative_path := name[len("content/"):]
+			relative_path := strings.ReplaceAll(name, "content\\", "")
 
 			if !fileAccessDenied(relative_path) {
 				filepaths = append(filepaths, relative_path)
@@ -214,7 +219,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	// Build the file tree
 	tree := buildTree(filepaths)
 
-	if fileAccessDenied(r.URL.Path[len("content/"):]) {
+	if fileAccessDenied(strings.ReplaceAll(r.URL.Path, "content\\", "")) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("Forbidden!"))
 		return
@@ -238,9 +243,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	performSetup()
-
 	http.HandleFunc("/", viewHandler)
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("html/css"))))    //Allow access to css folder
 	http.Handle("/favicon.ico", http.StripPrefix("/", http.FileServer(http.Dir("html/img")))) // Serve favicon
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
+  

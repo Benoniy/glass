@@ -136,7 +136,6 @@ body {
   padding-left: 10px;
 }
 
-
 /* The navigation menu links */
 .sidenav a {
   padding-top: 3px;
@@ -183,7 +182,6 @@ body {
 
   color: var(--main-title-color);
 }
-
 
 .main h1 { margin-bottom: 20px; font-size: 2em; }
 .main h2 { margin-top: 20px; margin-bottom: 5px; font-size: 1.75em; }
@@ -242,8 +240,14 @@ body {
   border: var(--main-table-border-color) 1px solid;
 }
 
-.main tr, .main th {
+.main tr {
   border: var(--main-table-border-color) 1px solid;
+}
+
+.main th {
+  border: var(--main-table-border-color) 1px solid;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 
