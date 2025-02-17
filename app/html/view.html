@@ -20,6 +20,15 @@
     <li onclick="alert('Option 1 selected')">Restrict Access</li>
 </ul>
 
+<html>
+  <form action="/settings/permissions/deny_entry" method="post" style="z-index: 1001; position: absolute;">
+    First Name: <input type="text" name="first_name" placeholder="Willy"/><br/>
+    Last Name: <input type="text" name="last_name" placeholder="Warmwood"/><br/>
+    Email: <input type="email" name="email" placeholder="willy.warwood@gmail.com"/><br/>
+    <input type="submit" value="Submit"/>
+  </form>
+</html>
+
 {{ define "node" }}
     <ul class="tree">
         {{ range .Children }}

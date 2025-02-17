@@ -141,25 +141,27 @@ func loadMd(title string) []byte {
 	}
 
 	prefix := ""
-	if len(title) > len("content/") && title[:len("content/")] != "content/" {
+	if len(title) < len("content/") {
+		prefix = "content/"
+	} else if len(title) > len("content/") && title[:len("content/")] != "content/" {
 		prefix = "content/"
 	}
 
-	if _, err := os.Stat(prefix + filename); !errors.Is(err, os.ErrNotExist) {
-		body, err := os.ReadFile(prefix + filename)
-		results := strings.Split(filename, "/")
-		result := results[len(results)-1]
-	
-		newBody := "# " + result[:len(result)-3] + "  \n" + string(body)
-		if err != nil {
-			return nil
-		}
-		return []byte(newBody)
-	} else {
-		return []byte("# " + filename[:len(filename) - len(file_ext)])
-	}
-		
+	body, err := os.ReadFile(prefix + filename)
+	results := strings.Split(filename, "/")
+	result := results[len(results)-1]
 
+	newBody := "# " + result[:len(result)-3] + "  \n" + string(body)
+	if err != nil {
+		print(prefix + filename)
+		if _, err := os.Stat(prefix + filename); !errors.Is(err, os.ErrNotExist) {
+			print("exists")
+			return []byte("# " + filename[:len(filename)-len(file_ext)])
+		}
+		return nil
+	}
+
+	return []byte(newBody)
 }
 
 // // an actual rendering of Paragraph is more complicated
@@ -241,11 +243,15 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func settingsHandler(w http.ResponseWriter, r *http.Request) {
+	print("reached")
+}
+
 func main() {
 	performSetup()
 	http.HandleFunc("/", viewHandler)
+	http.HandleFunc("/settings/", settingsHandler)
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("html/css"))))    //Allow access to css folder
 	http.Handle("/favicon.ico", http.StripPrefix("/", http.FileServer(http.Dir("html/img")))) // Serve favicon
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-  
