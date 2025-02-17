@@ -15,6 +15,10 @@
     <div class="main">{{ .FileContent }}</div>
 </html>
 
+<!-- Context menu displayed when right clicking on sidebar items  -->
+<ul class="sidebar-context-menu" id="sideContextMenu">
+    <li onclick="alert('Option 1 selected')">Restrict Access</li>
+</ul>
 
 {{ define "node" }}
     <ul class="tree">
@@ -31,7 +35,7 @@
             </li>
             {{ else }}
             <li class="li-file">
-                <span class="file"><a href="/{{ .FullPath }}" id="/{{ .FullPath }}-A" class="trackable">{{ .Name }}</a></span>
+                <span class="file"><a href="/{{ .FullPath }}" id="/{{ .FullPath }}-A">{{ .Name }}</a></span>
             </li>
             {{ end }}
         {{ end }}
@@ -41,11 +45,13 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const detailsElements = document.querySelectorAll("details");
-        const links = document.querySelectorAll(".trackable");
+        const sidebar_details = document.querySelectorAll(".sidebar details"); // sidebar folders - list functionality
+        const sidebar_summarys = document.querySelectorAll(".sidebar summary"); // sidebar folders - singular object functionality
+        const sidebar_links = document.querySelectorAll(".sidebar a"); // sidebar files
+        const contextMenu = document.getElementById("sideContextMenu");
 
         // Restore <details> state from memory, opening the sidebar items
-        detailsElements.forEach(details => {
+        sidebar_details.forEach(details => {
             const key = `details-${details.id}`;
             details.open = localStorage.getItem(key) === "open";
 
@@ -53,6 +59,7 @@
                 details.open ? localStorage.setItem(key, "open") : localStorage.removeItem(key)
             );
         });
+
 
         // Restore last clicked link in the sidebar and expand its parent <details> if necessary
         const lastClickedElement = document.getElementById(localStorage.getItem("lastClickedLink"));
@@ -71,17 +78,40 @@
 
         function ActionSideBarLink(linkId) {
             const sideBarLink = document.getElementById(linkId);
-            links.forEach(l => l.classList.remove("highlighted"));
+            sidebar_links.forEach(l => l.classList.remove("highlighted"));
             sideBarLink.classList.add("highlighted");
             localStorage.setItem("lastClickedLink", sideBarLink.id);
             openParentDetails(sideBarLink);
         }
 
+
+        function actionSidebarContextMenu(event){
+            event.preventDefault();
+            const itemName = event.target.getAttribute("data-item");
+
+            contextMenu.style.display = "block";
+            contextMenu.style.left = `calc(${event.pageX}px - 0px)`;
+            contextMenu.style.top = `calc(${event.pageY}px - 18px)`;
+        }
+
+        sidebar_summarys.forEach(summary => {
+            summary.addEventListener("contextmenu", (event) => {
+                actionSidebarContextMenu(event)
+            })
+        })
+
         // Handle link clicks in the sidebar
-        links.forEach(link => {
+        sidebar_links.forEach(link => {
             link.addEventListener("click", function () {
                 ActionSideBarLink(link.id)
             });
+            link.addEventListener("contextmenu", (event) => {
+                actionSidebarContextMenu(event)
+            })
+        });
+
+        document.addEventListener("click", () => {
+            contextMenu.style.display = "none";
         });
 
         // Handle main screen links, attempt to translate broken relative links to absolute links

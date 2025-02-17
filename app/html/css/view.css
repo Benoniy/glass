@@ -169,6 +169,32 @@ body {
   border-radius: 15px;
 }
 
+.sidebar-context-menu {
+  position: absolute;
+  display: none;
+  color: var(--default-text-color);
+  background: var(--default-bg-color);
+
+  border-radius: 15px;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  list-style: none;
+  z-index: 1000;
+
+}
+
+.sidebar-context-menu li {
+  padding: 8px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.sidebar-context-menu li:hover {
+  background-color: var(--main-hr-color);
+  color: var(--default-bg-color);
+}
+
+
 /*------------------*/
 /* The main content */
 /*------------------*/
