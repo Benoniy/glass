@@ -60,12 +60,8 @@
     const sidebar_summarys = document.querySelectorAll(".sidebar summary"); // sidebar folders - singular object functionality
     const sidebar_links = document.querySelectorAll(".sidebar a"); // sidebar files
     const contextMenu = document.getElementById("sideContextMenu");
-
     const currentPath = decodeURIComponent(window.location.pathname) + "-A";
     const sideBarLink = document.getElementById(currentPath);
-    sidebar_links.forEach(l => l.classList.remove("highlighted"));
-    sideBarLink.classList.add("highlighted");
-    openParentDetails(sideBarLink);
 
 
     // Restore <details> state from memory, opening the sidebar items
@@ -78,9 +74,15 @@
         );
     });
 
+    // Open details and highlight current element based on path
+    sidebar_links.forEach(l => l.classList.remove("highlighted"));
+    sideBarLink.classList.add("highlighted");
+    openParentDetails(sideBarLink);
+
 
     function openParentDetails(element) {
         const parentDetails = element.closest("details");
+        console.log(parentDetails.id)
         if (parentDetails) {
             parentDetails.open = true;
             openParentDetails(parentDetails.parentElement); // Recursively open further up
@@ -93,7 +95,6 @@
         const itemName = event.target.getAttribute("data-item");
         
         if (targetLink) {
-            console.log(targetLink.getAttribute("id"))
             lastClickedSidebarLink = targetLink.getAttribute("id"); // Store href
         }
         contextMenu.style.display = "block";
