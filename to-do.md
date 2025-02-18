@@ -3,6 +3,7 @@ MUST HAVE:
 * add .md embedding support -- consider https://www.makeuseof.com/md-block-render-markdown-web-page/
 * Support for embedded images
 * Add README and License
+* Full refactor
 
 
 NICE TO HAVE / IDEAS:

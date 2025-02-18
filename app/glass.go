@@ -67,7 +67,7 @@ func buildTree(paths []string) *FileNode {
 	root := &FileNode{Name: "root", IsDir: true}
 
 	for _, path := range paths {
-		parts := strings.Split(path, "\\")
+		parts := strings.Split(path, "/")
 		current := root
 
 		for i, part := range parts {
@@ -183,6 +183,10 @@ func myRenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bo
 }
 
 func fileAccessDenied(path string) bool {
+	if string(path[0]) == "/" {
+		path = path[1:]
+	}
+	
 
 	for _, deny_entry := range settings.Permissions["DenyList"] {
 		// Don't count empty entries
@@ -209,6 +213,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		file_ext := name[len(name)-3:]
 		if fileExtInString(file_ext) {
 			relative_path := strings.ReplaceAll(name, "content\\", "")
+			relative_path = strings.ReplaceAll(relative_path, "\\", "/")
 
 			if !fileAccessDenied(relative_path) {
 				filepaths = append(filepaths, relative_path)

@@ -17,17 +17,18 @@
 
 <!-- Context menu displayed when right clicking on sidebar items  -->
 <ul class="sidebar-context-menu" id="sideContextMenu">
-    <li onclick="alert('Option 1 selected')">Restrict Access</li>
+    <li onclick="openPermForm()">Restrict Access</li>
 </ul>
 
-<html>
-  <form action="/settings/permissions/deny_entry" method="post" style="z-index: 1001; position: absolute;">
-    First Name: <input type="text" name="first_name" placeholder="Willy"/><br/>
-    Last Name: <input type="text" name="last_name" placeholder="Warmwood"/><br/>
-    Email: <input type="email" name="email" placeholder="willy.warwood@gmail.com"/><br/>
-    <input type="submit" value="Submit"/>
+<!-- Form Shown when restricting access to files via the right click menu -->
+<div class="permFormModal-overlay" id="permFormModalOverlay"></div>
+<div class="permFormModal">
+  <form class="permEditForm" id="permEditForm">
+    Regex: <input type="text" name="Regex" placeholder="" id="permEditForm-regex-input"/><br/>
+    <input type="submit" value="Submit" class="button"/>
+    <input type="button" value="Cancel" class="button" onclick="closePermForm()"/>
   </form>
-</html>
+</div>
 
 {{ define "node" }}
     <ul class="tree">
@@ -53,93 +54,154 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const sidebar_details = document.querySelectorAll(".sidebar details"); // sidebar folders - list functionality
-        const sidebar_summarys = document.querySelectorAll(".sidebar summary"); // sidebar folders - singular object functionality
-        const sidebar_links = document.querySelectorAll(".sidebar a"); // sidebar files
-        const contextMenu = document.getElementById("sideContextMenu");
+    let lastClickedSidebarLink = ""; // Store the last right-clicked href
 
-        // Restore <details> state from memory, opening the sidebar items
-        sidebar_details.forEach(details => {
-            const key = `details-${details.id}`;
-            details.open = localStorage.getItem(key) === "open";
+    const sidebar_details = document.querySelectorAll(".sidebar details"); // sidebar folders - list functionality
+    const sidebar_summarys = document.querySelectorAll(".sidebar summary"); // sidebar folders - singular object functionality
+    const sidebar_links = document.querySelectorAll(".sidebar a"); // sidebar files
+    const contextMenu = document.getElementById("sideContextMenu");
 
-            details.addEventListener("toggle", () => 
-                details.open ? localStorage.setItem(key, "open") : localStorage.removeItem(key)
-            );
-        });
+    const currentPath = decodeURIComponent(window.location.pathname) + "-A";
+    const sideBarLink = document.getElementById(currentPath);
+    sidebar_links.forEach(l => l.classList.remove("highlighted"));
+    sideBarLink.classList.add("highlighted");
+    openParentDetails(sideBarLink);
 
 
-        // Restore last clicked link in the sidebar and expand its parent <details> if necessary
-        const lastClickedElement = document.getElementById(localStorage.getItem("lastClickedLink"));
-        if (lastClickedElement) {
-            lastClickedElement.classList.add("highlighted");
-            openParentDetails(lastClickedElement);
+    // Restore <details> state from memory, opening the sidebar items
+    sidebar_details.forEach(details => {
+        const key = `details-${details.id}`;
+        details.open = localStorage.getItem(key) === "open";
+
+        details.addEventListener("toggle", () => 
+            details.open ? localStorage.setItem(key, "open") : localStorage.removeItem(key)
+        );
+    });
+
+
+    function openParentDetails(element) {
+        const parentDetails = element.closest("details");
+        if (parentDetails) {
+            parentDetails.open = true;
+            openParentDetails(parentDetails.parentElement); // Recursively open further up
         }
+    }
 
-        function openParentDetails(element) {
-            const parentDetails = element.closest("details");
-            if (parentDetails) {
-                parentDetails.open = true;
-                openParentDetails(parentDetails.parentElement); // Recursively open further up
-            }
+
+    function actionSidebarContextMenu(event, targetLink){
+        event.preventDefault();
+        const itemName = event.target.getAttribute("data-item");
+        
+        if (targetLink) {
+            console.log(targetLink.getAttribute("id"))
+            lastClickedSidebarLink = targetLink.getAttribute("id"); // Store href
         }
+        contextMenu.style.display = "block";
+        contextMenu.style.left = `calc(${event.pageX}px - 0px)`;
+        contextMenu.style.top = `calc(${event.pageY}px - 18px)`;
+    }
 
-        function ActionSideBarLink(linkId) {
-            const sideBarLink = document.getElementById(linkId);
-            sidebar_links.forEach(l => l.classList.remove("highlighted"));
-            sideBarLink.classList.add("highlighted");
-            localStorage.setItem("lastClickedLink", sideBarLink.id);
-            openParentDetails(sideBarLink);
-        }
-
-
-        function actionSidebarContextMenu(event){
-            event.preventDefault();
-            const itemName = event.target.getAttribute("data-item");
-
-            contextMenu.style.display = "block";
-            contextMenu.style.left = `calc(${event.pageX}px - 0px)`;
-            contextMenu.style.top = `calc(${event.pageY}px - 18px)`;
-        }
-
-        sidebar_summarys.forEach(summary => {
-            summary.addEventListener("contextmenu", (event) => {
-                actionSidebarContextMenu(event)
-            })
+    sidebar_summarys.forEach(summary => {
+        summary.addEventListener("contextmenu", (event) => {
+            const targetLink = event.target.closest("details"); // Get the closest anchor tag (file link)
+            actionSidebarContextMenu(event, targetLink)
         })
+    })
 
-        // Handle link clicks in the sidebar
-        sidebar_links.forEach(link => {
-            link.addEventListener("click", function () {
-                ActionSideBarLink(link.id)
+    // Handle link clicks in the sidebar
+    sidebar_links.forEach(link => {
+        link.addEventListener("contextmenu", (event) => {
+            const targetLink = event.target.closest("a"); // Get the closest anchor tag (file link)
+            actionSidebarContextMenu(event, targetLink)
+        })
+    });
+
+    document.addEventListener("click", () => {
+        contextMenu.style.display = "none";
+    });
+
+    // Handle main screen links, attempt to translate broken relative links to absolute links
+    document.querySelectorAll(".main a").forEach(link => {
+        link.addEventListener("click", event => {
+            event.preventDefault();
+
+            try {
+                let href = decodeURIComponent(link.getAttribute("href")).replaceAll("../", "");
+
+            } catch (error) {
+                console.error(error.message);
+            }
+
+            const tryLoad = href => fetch(href, { method: "HEAD" })
+                .then(res => res.ok ? (location.href = href) : Promise.reject());
+
+            tryLoad(link.href).catch(() => tryLoad("/" + link.getAttribute("href").replace(/^\/+/, "")));
+        });
+    });
+
+
+    function closePermForm() {
+        document.querySelector(".permFormModal").style.display = "none";
+        document.getElementById("permFormModalOverlay").style.display = "none";
+    }
+        
+    function openPermForm(){
+        // Get modal and overlay elements
+        const modal = document.querySelector(".permFormModal");
+        const modalOverlay = document.getElementById("permFormModalOverlay");
+        const regexInput = document.getElementById("permEditForm-regex-input");
+
+        var regValue = "^" + lastClickedSidebarLink.slice(1, -2) + "\/.*"
+        
+        if (lastClickedSidebarLink.slice(-2) == "-A") {
+            regValue = "^" + lastClickedSidebarLink.slice(1, -2)
+        }
+
+
+        regexInput.value = regValue.replaceAll("\/","\\\/") || "";
+
+        // Show the modal and overlay
+        modal.style.display = "block";
+        modalOverlay.style.display = "block";
+
+        // Focus on input field
+        document.getElementById("permEditForm-regex-input").focus();
+
+        // Hide context menu
+        document.getElementById("sideContextMenu").style.display = "none";
+    }
+
+    document.getElementById("permEditForm").addEventListener("submit", async function (event) {
+        event.preventDefault(); // Prevent default page reload
+
+        const regexValue = document.getElementById("permEditForm-regex-input").value;
+
+        // Prepare data to send
+        const formData = {
+            regex: regexValue
+        };
+
+        try {
+            // Send POST request to your Go backend
+            const response = await fetch("/api/submit", { // Change to your Go API route
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
             });
-            link.addEventListener("contextmenu", (event) => {
-                actionSidebarContextMenu(event)
-            })
-        });
 
-        document.addEventListener("click", () => {
-            contextMenu.style.display = "none";
-        });
+            if (!response.ok) {
+                throw new Error("Failed to submit data");
+            }
 
-        // Handle main screen links, attempt to translate broken relative links to absolute links
-        document.querySelectorAll(".main a").forEach(link => {
-            link.addEventListener("click", event => {
-                event.preventDefault();
+            const result = await response.json(); // Parse JSON response
+            alert("Success: " + result.message); // Show success message
 
-                try {
-                    let href = link.getAttribute("href").replaceAll("%20", " ").replaceAll("../", "");
-                    ActionSideBarLink(`/${href}-A`);
-                } catch (error) {
-                    console.error(error.message);
-                }
-
-                const tryLoad = href => fetch(href, { method: "HEAD" })
-                    .then(res => res.ok ? (location.href = href) : Promise.reject());
-
-                tryLoad(link.href).catch(() => tryLoad("/" + link.getAttribute("href").replace(/^\/+/, "")));
-            });
-        });
+            closeModal(); // Close modal after submission
+            location.reload()
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
     });
 </script>

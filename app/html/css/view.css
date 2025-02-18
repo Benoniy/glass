@@ -312,3 +312,56 @@ body {
   margin-top: 40px;
 }
 
+.permEditForm {
+  top: calc(50% - 70px);
+  left: calc(50% - 100px);
+  position: absolute;
+  z-index: 1000;
+  padding: 20px;
+
+
+  color: var(--default-text-color);
+  background-color: var(--sbar-bg-color);
+
+
+  border-radius: 15px;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
+}
+
+.permFormModal-overlay {
+  display: none; /* Initially hidden */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Dark transparent overlay */
+  z-index: 999; /* Ensures it covers everything */
+}
+
+.permFormModal {
+  display: none;
+}
+
+.permEditForm input {
+  background-color: var(--sbar-bg-color-alt);
+  border: none;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 5px;
+  color: var(--default-text-color);
+}
+
+.permEditForm .button {
+  position:relative;
+  float: right;
+}
+
+.permEditForm input:hover {
+  position:relative;
+  background-color: var(--sbar-link-h-color);
+}
